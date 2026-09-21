@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 日本語（第3种语言） -->
+<resources>
+    <string name="app_name">2024050133乔于恬</string>
+    <string name="hello_world">こんにちは、世界！</string>
+    <string name="lang_zh">中文</string>
+    <string name="lang_en">English</string>
+    <string name="lang_ja">日本語</string>
+    <string name="greet_hint">名前を入力してください</string>
+    <string name="greet_btn">挨拶する</string>
+    <string name="greeting">こんにちは、%1$sさん！</string>
+    <string name="anonymous">友達</string>
+</resources>
