@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 日本語（第3种语言） -->
+<!-- 日本語 -->
 <resources>
-    <string name="app_name">2024050133乔于恬</string>
-    <string name="hello_world">こんにちは、世界！</string>
-    <string name="lang_zh">中文</string>
-    <string name="lang_en">English</string>
-    <string name="lang_ja">日本語</string>
-    <string name="greet_hint">名前を入力してください</string>
-    <string name="greet_btn">挨拶する</string>
-    <string name="greeting">こんにちは、%1$sさん！</string>
-    <string name="anonymous">友達</string>
+    <string name="app_name">QiaoYutian2024050133</string>
+
+    <string name="zone1_title">ゾーン1：レコードを動的に追加（コードで TextView 生成）</string>
+    <string name="btn_add">レコードを追加</string>
+    <string name="record_item">コードで生成した第%1$d件目のレコード</string>
+
+    <string name="zone2_title">ゾーン2：プログラムアドバイザー（MVC）</string>
+    <string name="adviser_hint">専攻を入力してください（例：コンピュータ科学）</string>
+    <string name="btn_query">アドバイスを検索</string>
+    <string name="result_hint">専攻を入力してボタンを押すとアドバイスが表示されます。</string>
+    <string name="advice_not_found">「%1$s」に関するアドバイスは未収録です。例：コンピュータ科学、ソフトウェア工学、AI、データ科学、ネットワーク。</string>
+    <string name="advice_cs">コンピュータ科学：アルゴリズム・OS・計算機原理が中心。データ構造を強化し、作品を作りましょう。</string>
+    <string name="advice_se">ソフトウェア工学：要件定義・設計・テスト・プロジェクト管理が中心。実際の開発経験を積みましょう。</string>
+    <string name="advice_ai">人工知能：機械学習・深層学習と数学が中心。線形代数と確率統計を固め、コンペに参加しましょう。</string>
+    <string name="advice_ds">データ科学：クレンジング・統計分析・可視化が中心。SQL と Python を習得しましょう。</string>
+    <string name="advice_net">ネットワーク工学：ネットワーク・ルーティング・セキュリティが中心。実験を重ね、クラウド動向を追いましょう。</string>
 </resources>

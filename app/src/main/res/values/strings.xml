@@ -1,13 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 默认语言：中文 -->
+<!-- 默认语言：中文（实验二：UI控件代码生成 + MVC） -->
 <resources>
-    <string name="app_name">2024050133乔于恬</string>
-    <string name="hello_world">你好，世界！</string>
-    <string name="lang_zh">中文</string>
-    <string name="lang_en">English</string>
-    <string name="lang_ja">日本語</string>
-    <string name="greet_hint">请输入你的名字</string>
-    <string name="greet_btn">向我问好</string>
-    <string name="greeting">你好，%1$s！</string>
-    <string name="anonymous">朋友</string>
+    <string name="app_name">乔于恬2024050133</string>
+
+    <!-- 区1：代码动态生成 TextView，ScrollView 嵌套 LinearLayout 滚动 -->
+    <string name="zone1_title">区1：动态添加记录（代码生成 TextView）</string>
+    <string name="btn_add">添加一条记录</string>
+    <string name="record_item">第%1$d条动态生成的记录</string>
+
+    <!-- 区2：MVC 模式的 ProgramAdviser（专业咨询） -->
+    <string name="zone2_title">区2：专业咨询 Program Adviser（MVC）</string>
+    <string name="adviser_hint">请输入专业名称，如：计算机、软件工程</string>
+    <string name="btn_query">查询专业建议</string>
+    <string name="result_hint">输入专业名称后，点击按钮获取咨询建议。</string>
+    <string name="advice_not_found">暂未收录“%1$s”专业的咨询建议，可尝试：计算机、软件工程、人工智能、数据科学、网络工程。</string>
+    <string name="advice_cs">计算机科学与技术：侧重算法、操作系统、计算机组成原理等基础，就业面广；建议多动手做项目，夯实数据结构与算法。</string>
+    <string name="advice_se">软件工程：侧重需求分析、软件设计、测试与项目管理；建议积累完整工程经验，熟悉主流框架与团队协作流程。</string>
+    <string name="advice_ai">人工智能：侧重机器学习、深度学习与数学基础；建议打好线性代数与概率论，多参加竞赛与开源项目。</string>
+    <string name="advice_ds">数据科学：侧重数据清洗、统计分析与可视化；建议掌握 SQL、Python 与业务理解，培养数据驱动思维。</string>
+    <string name="advice_net">网络工程：侧重计算机网络、路由交换与网络安全；建议多做实验，关注云网络与 DevOps 趋势。</string>
 </resources>

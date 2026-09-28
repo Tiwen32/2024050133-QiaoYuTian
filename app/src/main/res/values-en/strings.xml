@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- English -->
 <resources>
-    <string name="app_name">2024050133乔于恬</string>
-    <string name="hello_world">Hello, World!</string>
-    <string name="lang_zh">中文</string>
-    <string name="lang_en">English</string>
-    <string name="lang_ja">日本語</string>
-    <string name="greet_hint">Enter your name</string>
-    <string name="greet_btn">Greet me</string>
-    <string name="greeting">Hello, %1$s!</string>
-    <string name="anonymous">friend</string>
+    <string name="app_name">QiaoYutian2024050133</string>
+
+    <string name="zone1_title">Zone 1: Dynamically Add Records (code-generated TextView)</string>
+    <string name="btn_add">Add a record</string>
+    <string name="record_item">Record #%1$d generated in code</string>
+
+    <string name="zone2_title">Zone 2: Program Adviser (MVC)</string>
+    <string name="adviser_hint">Enter a major, e.g. Computer Science</string>
+    <string name="btn_query">Query advice</string>
+    <string name="result_hint">Enter a major and tap the button to get advice.</string>
+    <string name="advice_not_found">No advice found for "%1$s". Try: Computer Science, Software Engineering, AI, Data Science, Networking.</string>
+    <string name="advice_cs">Computer Science: focuses on algorithms, operating systems and computer organization; build strong data structures &amp; algorithms and ship side projects.</string>
+    <string name="advice_se">Software Engineering: focuses on requirements, design, testing and project management; gain end-to-end engineering experience with mainstream frameworks.</string>
+    <string name="advice_ai">Artificial Intelligence: focuses on ML, deep learning and math; strengthen linear algebra &amp; probability and join competitions and open-source projects.</string>
+    <string name="advice_ds">Data Science: focuses on cleaning, statistical analysis and visualization; master SQL, Python and business sense, think data-driven.</string>
+    <string name="advice_net">Network Engineering: focuses on networking, routing/switching and security; do hands-on labs and follow cloud networking &amp; DevOps trends.</string>
 </resources>

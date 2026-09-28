@@ -1,187 +1,186 @@
 /*
- * 实验作业：多语言版交互式 Hello World（纯代码实现 Pure Code）
+ * 实验二：UI 控件代码生成 + Android MVC
  * 姓名/学号：乔于恬 / 2024050133
  *
- * 说明：
- * 1. 界面完全由 Jetpack Compose 代码构建，不使用任何 XML 布局文件；
- * 2. 支持 中文 / English / 日本語 三种语言，点击语言按钮即时切换
- *    （通过 Locale + recreate 实现，选择持久化保存）；
- * 3. 随语言切换显示对应国旗图片（中文-中国 / English-英国 / 日本語-日本）；
- * 4. 输入姓名点击"向我问好"，以当前语言输出个性化问候，实现交互。
+ * MVC 分工：
+ *  - Model  : ProgramModel.kt  —— 专业咨询数据仓库，提供 query() 查询；
+ *  - View   : 本文件 buildUI() 中纯代码 new 出的所有控件（无任何 XML 布局），
+ *             区1 使用 ScrollView 嵌套 LinearLayout 承载动态 addView 的 TextView；
+ *  - Controller : MainActivity —— 接收按钮点击，调用 Model，再把结果刷新到 View。
+ *
+ * 规范：界面上不出现任何硬编码字符串，全部通过 R.string.* 资源间接引用。
  */
 package com.example.affirmations
 
-import android.content.Context
-import android.content.res.Configuration
+import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
+import android.util.TypedValue
+import android.view.Gravity
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.affirmations.ui.theme.AffirmationsTheme
-import java.util.Locale
 
 class MainActivity : ComponentActivity() {
 
+    // ===== Model 层引用（Controller 持有 Model）=====
+    private lateinit var programModel: ProgramModel
+
+    // ===== View 层中需要被事件回调访问的控件 =====
+    private lateinit var recordContainer: LinearLayout   // 区1：ScrollView 内的 LinearLayout
+    private lateinit var resultView: TextView            // 区2：查询结果显示
+    private lateinit var inputView: EditText             // 区2：专业名称输入
+
+    private var recordCount = 0                          // 区1：已动态添加的条数
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // 启动时恢复上次选择的语言（默认中文）
-        applySavedLocale()
-        // 纯代码构建整个界面（Compose，无任何布局 XML）
-        setContent {
-            AffirmationsTheme {
-                HelloWorldScreen(onSwitchLanguage = ::switchLanguage)
+
+        // 1) 初始化 Model
+        programModel = ProgramModel()
+
+        // 2) 完全用代码构建 View 并设置为内容视图
+        setContentView(buildUI())
+    }
+
+    /** 纯代码构建整个界面：根 LinearLayout(vertical)，内含区1 与 区2 两个功能区 */
+    private fun buildUI(): View {
+        val density = resources.displayMetrics.density
+        fun dp(value: Int): Int = (value * density).toInt()
+
+        // 根布局
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(0xFFF2F5FB.toInt())
+            setPadding(dp(20), dp(24), dp(20), dp(24))
+        }
+
+        // 顶部应用标题（姓名 + 学号，来自字符串资源）
+        root.addView(
+            TextView(this).apply {
+                text = getString(R.string.app_name)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
+                setTextColor(0xFF0D47A1.toInt())
+                setTypeface(typeface, Typeface.BOLD)
+                gravity = Gravity.CENTER
+                setPadding(0, 0, 0, dp(16))
             }
+        )
+
+        // ==================== 区1 ====================
+        root.addView(makeZoneTitle(getString(R.string.zone1_title)))
+
+        // “添加一条记录”按钮：点击后用代码 new TextView 并 addView 进 LinearLayout
+        root.addView(
+            Button(this).apply {
+                text = getString(R.string.btn_add)
+                setOnClickListener { onAddRecord() }
+            }
+        )
+
+        // ScrollView 嵌套 LinearLayout：动态添加的 TextView 放在内层 LinearLayout 中
+        val scrollView = ScrollView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f
+            ).apply { topMargin = dp(8) }
+            setBackgroundColor(Color.WHITE)
+            // 给滚动区一个细边框感
+            elevation = dp(2).toFloat()
+        }
+        recordContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(12), dp(12), dp(12), dp(12))
+        }
+        scrollView.addView(recordContainer)
+        root.addView(scrollView)
+
+        // 分隔线
+        root.addView(
+            View(this).apply {
+                setBackgroundColor(0xFFD0D7E2.toInt())
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, dp(1)
+                ).apply { topMargin = dp(16); bottomMargin = dp(16) }
+            }
+        )
+
+        // ==================== 区2 ====================
+        root.addView(makeZoneTitle(getString(R.string.zone2_title)))
+
+        // 专业名称输入框
+        inputView = EditText(this).apply {
+            hint = getString(R.string.adviser_hint)
+            setSingleLine(true)
+            setPadding(dp(12), dp(12), dp(12), dp(12))
+            setBackgroundColor(Color.WHITE)
+        }
+        root.addView(inputView)
+
+        // “查询专业建议”按钮：Controller 事件响应 -> 调用 Model -> 刷新 View
+        root.addView(
+            Button(this).apply {
+                text = getString(R.string.btn_query)
+                setOnClickListener { onQueryAdvice() }
+            }
+        )
+
+        // 查询结果显示
+        resultView = TextView(this).apply {
+            text = getString(R.string.result_hint)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+            setTextColor(0xFF202936.toInt())
+            setLineSpacing(0f, 1.2f)
+            setPadding(dp(4), dp(12), dp(4), 0)
+        }
+        root.addView(resultView)
+
+        return root
+    }
+
+    /** 生成每个功能区的小标题 TextView */
+    private fun makeZoneTitle(text: String): TextView {
+        val density = resources.displayMetrics.density
+        fun dp(value: Int): Int = (value * density).toInt()
+        return TextView(this).apply {
+            this.text = text
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 17f)
+            setTextColor(0xFF0D47A1.toInt())
+            setTypeface(typeface, Typeface.BOLD)
+            setPadding(0, dp(4), 0, dp(8))
         }
     }
 
-    /** 切换语言：保存选择 -> 应用 Locale -> 重建界面 */
-    private fun switchLanguage(lang: String) {
-        getSharedPreferences("app_prefs", MODE_PRIVATE)
-            .edit().putString("lang", lang).apply()
-        applyLocale(lang)
-        recreate()
-    }
+    // ==================== Controller：事件处理 ====================
 
-    /** 读取持久化语言并应用 */
-    private fun applySavedLocale() {
-        val saved = getSharedPreferences("app_prefs", MODE_PRIVATE)
-            .getString("lang", "zh") ?: "zh"
-        applyLocale(saved)
-    }
+    /** 区1：用代码动态 new 一个 TextView，加入 ScrollView 内的 LinearLayout */
+    private fun onAddRecord() {
+        recordCount++
+        val density = resources.displayMetrics.density
+        fun dp(value: Int): Int = (value * density).toInt()
 
-    /** 应用 Locale 到资源（课程中多语言切换的标准做法） */
-    @Suppress("DEPRECATION")
-    private fun applyLocale(lang: String) {
-        val locale = Locale(lang)
-        Locale.setDefault(locale)
-        val config = Configuration(resources.configuration)
-        config.setLocale(locale)
-        resources.updateConfiguration(config, resources.displayMetrics)
-    }
-}
-
-/** 交互式 Hello World 主界面（纯代码） */
-@Composable
-fun HelloWorldScreen(onSwitchLanguage: (String) -> Unit) {
-    val context = LocalContext.current
-    val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-    val lang = prefs.getString("lang", "zh") ?: "zh"
-
-    // 当前语言对应的国旗资源
-    val flagRes = when (lang) {
-        "en" -> R.drawable.flag_gb
-        "ja" -> R.drawable.flag_jp
-        else -> R.drawable.flag_cn
-    }
-
-    var nameInput by remember { mutableStateOf("") }
-    var showGreeting by remember { mutableStateOf(false) }
-
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFF2F5FB)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            // 1. 应用标题：姓名 + 学号
-            Text(
-                text = stringResource(R.string.app_name),
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF0D47A1),
-                textAlign = TextAlign.Center
+        val tv = TextView(this).apply {
+            // 文本来自字符串资源，带序号参数
+            text = getString(R.string.record_item, recordCount)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+            setTextColor(0xFF202936.toInt())
+            setPadding(dp(12), dp(14), dp(12), dp(14))
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
             )
-            // 2. 当前语言的国旗图片
-            Image(
-                painter = painterResource(flagRes),
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(top = 18.dp)
-                    .size(100.dp)
-            )
-            // 3. 核心文案："你好，世界！"（随语言切换）
-            Text(
-                text = stringResource(R.string.hello_world),
-                fontSize = 34.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF202936),
-                modifier = Modifier.padding(vertical = 14.dp),
-                textAlign = TextAlign.Center
-            )
-            // 4. 三种语言切换按钮
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                listOf(
-                    "zh" to R.string.lang_zh,
-                    "en" to R.string.lang_en,
-                    "ja" to R.string.lang_ja
-                ).forEach { (code, labelRes) ->
-                    Button(onClick = { onSwitchLanguage(code) }) {
-                        Text(stringResource(labelRes))
-                    }
-                }
-            }
-            // 5. 姓名输入框（交互输入）
-            OutlinedTextField(
-                value = nameInput,
-                onValueChange = { nameInput = it },
-                label = { Text(stringResource(R.string.greet_hint)) },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 20.dp)
-            )
-            // 6. 问候按钮（交互触发）
-            Button(
-                onClick = { showGreeting = true },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp)
-            ) {
-                Text(stringResource(R.string.greet_btn), fontSize = 16.sp)
-            }
-            // 7. 问候结果：用当前语言输出"你好，XX！"
-            if (showGreeting) {
-                val name = nameInput.trim().ifEmpty { context.getString(R.string.anonymous) }
-                Text(
-                    text = context.getString(R.string.greeting, name),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0D47A1),
-                    modifier = Modifier.padding(top = 16.dp),
-                    textAlign = TextAlign.Center
-                )
-            }
         }
+        recordContainer.addView(tv)
+    }
+
+    /** 区2：取输入 -> 调用 Model 查询 -> 把结果显示到结果 TextView */
+    private fun onQueryAdvice() {
+        val keyword = inputView.text.toString()
+        // Controller 把请求转发给 Model，再把 Model 返回的数据交给 View
+        resultView.text = programModel.query(this, keyword)
     }
 }
